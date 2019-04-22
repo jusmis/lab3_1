@@ -107,6 +107,19 @@ public class BookKeeperTest {
         Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
 
         assertThat(invoice.getClient(), is(EXPECTED_VALUE));
+    }
 
+    @Test
+    public void requestingInvoiceWithNoProductsShouldReturnsInvoiceWithoutProducts(){
+        final int EXPECTED_VALUE = 0;
+        TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
+
+        Mockito.when(taxPolicy.calculateTax(Mockito.any(ProductType.class), Mockito.any(Money.class))).thenReturn(new Tax(Money.ZERO, "test"));
+
+        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+        InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("195018"),"Justyna"));
+        Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
+
+        assertThat(invoice.getItems().size(), is(EXPECTED_VALUE));
     }
 }
