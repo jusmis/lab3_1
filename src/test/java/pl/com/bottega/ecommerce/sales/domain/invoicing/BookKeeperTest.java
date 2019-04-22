@@ -49,9 +49,22 @@ public class BookKeeperTest {
         Mockito.when(productData1.getType()).thenReturn(ProductType.STANDARD);
         Mockito.when(productData2.getType()).thenReturn(ProductType.STANDARD);
 
-        Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
+        bookKeeper.issuance(invoiceRequest, taxPolicy);
 
         Mockito.verify(taxPolicy, Mockito.times(2)).calculateTax(ProductType.STANDARD, Money.ZERO);
 
+    }
+
+    @Test
+    public void requestingInvoiceWithoutProductsShouldNotCallCalculateTaxMethod(){
+        TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
+
+        Mockito.when(taxPolicy.calculateTax(Mockito.any(ProductType.class), Mockito.any(Money.class))).thenReturn(new Tax(Money.ZERO, "test"));
+
+        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+        InvoiceRequest invoiceRequest = new InvoiceRequest(new ClientData(new Id("195018"), "Justyna"));
+        bookKeeper.issuance(invoiceRequest, taxPolicy);
+
+        Mockito.verify(taxPolicy, Mockito.never()).calculateTax(Mockito.any(ProductType.class), Mockito.any(Money.class));
     }
 }
