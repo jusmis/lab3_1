@@ -85,10 +85,28 @@ public class BookKeeperTest {
         Mockito.when(invoiceFactory.create(invoiceRequest.getClientData())).thenReturn(new Invoice(Id.generate(), invoiceRequest.getClientData()));
 
         BookKeeper bookKeeper = new BookKeeper(invoiceFactory);
-
         bookKeeper.issuance(invoiceRequest, taxPolicy);
 
         Mockito.verify(invoiceFactory, Mockito.times(1)).create(Mockito.any(ClientData.class));
+    }
+
+    @Test
+    public void requestingInvoiceWithSpecificClientDataShouldReturnInvoiceWithTheSameClientData(){
+        final ClientData EXPECTED_VALUE = new ClientData(new Id("195018"),"Justyna");
+        TaxPolicy taxPolicy = Mockito.mock(TaxPolicy.class);
+
+        Mockito.when(taxPolicy.calculateTax(Mockito.any(ProductType.class), Mockito.any(Money.class))).thenReturn(new Tax(Money.ZERO, "test"));
+
+        BookKeeper bookKeeper = new BookKeeper(new InvoiceFactory());
+        InvoiceRequest invoiceRequest = new InvoiceRequest(EXPECTED_VALUE);
+        ProductData productData = Mockito.mock(ProductData.class);
+
+        Mockito.when(productData.getType()).thenReturn(ProductType.STANDARD);
+
+        invoiceRequest.add(new RequestItem(productData, 1, Money.ZERO));
+        Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
+
+        assertThat(invoice.getClient(), is(EXPECTED_VALUE));
 
     }
 }
