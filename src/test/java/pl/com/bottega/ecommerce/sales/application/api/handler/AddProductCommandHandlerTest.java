@@ -15,6 +15,8 @@ import pl.com.bottega.ecommerce.sales.domain.reservation.ReservationRepository;
 import pl.com.bottega.ecommerce.sharedkernel.Money;
 import pl.com.bottega.ecommerce.system.application.SystemContext;
 
+import static org.junit.Assert.assertNull;
+
 public class AddProductCommandHandlerTest {
 
     @Test
@@ -36,5 +38,26 @@ public class AddProductCommandHandlerTest {
         addProductCommandHandler.handle(new AddProductCommand(Id.generate(), product.getId(), Mockito.anyInt()));
 
         Mockito.verify(reservation, Mockito.times(1)).add(Mockito.eq(product), Mockito.anyInt());
+    }
+
+    @Test
+    public void callingHandleMethodShouldReturnNull(){
+        ReservationRepository reservationRepository = Mockito.mock(ReservationRepository.class);
+        ProductRepository productRepository = Mockito.mock(ProductRepository.class);
+        SuggestionService suggestionService = Mockito.mock(SuggestionService.class);
+        ClientRepository clientRepository = Mockito.mock(ClientRepository.class);
+        SystemContext systemContext = Mockito.mock(SystemContext.class);
+        AddProductCommand addProductCommand = Mockito.mock(AddProductCommand.class);
+        Reservation reservation = Mockito.mock(Reservation.class);
+        Product product = new Product(Id.generate(), Money.ZERO, "test", ProductType.STANDARD);
+
+        Mockito.when(addProductCommand.getQuantity()).thenReturn(1);
+        Mockito.when(addProductCommand.getProductId()).thenReturn(Id.generate());
+        Mockito.when(addProductCommand.getOrderId()).thenReturn(Id.generate());
+        Mockito.when(productRepository.load(Mockito.any())).thenReturn(product);
+        Mockito.when(reservationRepository.load(Mockito.any())).thenReturn(reservation);
+
+        AddProductCommandHandler addProductCommandHandler = new AddProductCommandHandler(reservationRepository, productRepository, suggestionService, clientRepository, systemContext);
+        assertNull(addProductCommandHandler.handle(addProductCommand));
     }
 }
